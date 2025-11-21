@@ -83,7 +83,7 @@ function setup() {
   // eckes[0] = new EckeDrawer(width / 2, height / 2, 100);
   // eckes[0].generate(10);
 
-  const size = height / 6;
+  const size = height / 14;
   for (let y = size + size / 2; y < height - size; y += size) {
     for (let x = size + size / 2; x < width - size; x += size) {
       const newEcke = new EckeDrawer(
