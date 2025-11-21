@@ -1,0 +1,307 @@
+const MAX_DEPTH = 5;
+const MARG = 0;
+let colorSchemes;
+let currentColorScheme;
+
+let count = 0;
+let countLimit = 5000;
+let isStart = false;
+let colors = [];
+let resColors = [];
+
+class Section {
+  constructor(x, y, wh, col) {
+    this.x = x;
+    this.y = y;
+    this.wh = wh;
+    this.col = col;
+  }
+  draw() {
+    push();
+    translate(this.x, this.y);
+    // noFill();
+    // rect(0, 0, w, h);
+
+    // グリッド内の背景
+    stroke(this.col);
+    fill(this.col);
+    // stroke(30);
+    // fill(col);
+    this.drawRnadShape(this.wh, this.wh);
+
+    // noFill();
+    // stroke(30);
+    // rect(0, 0, w, h);
+
+    pop();
+  }
+  drawRnadShape(w, h) {
+    const dice = int(random(13));
+    // print(dice);
+    switch (dice) {
+      case 0:
+        rect(0, 0, w, h);
+        break;
+      case 1:
+        rect(0, 0, w, h / 2);
+        break;
+      case 2:
+        rect(0, 0, w / 2, h);
+        break;
+      case 3:
+        rect(0, h / 2, w, h / 2);
+        break;
+      case 4:
+        rect(w / 2, 0, w / 2, h);
+        break;
+      case 5:
+        arc(0, 0, w * 2, h * 2, 0, PI / 2);
+        break;
+      case 6:
+        arc(0, h, w * 2, h * 2, PI + PI / 2, 0);
+        break;
+      case 7:
+        arc(w, 0, w * 2, h * 2, PI / 2, PI);
+        break;
+      case 8:
+        arc(w, h, w * 2, h * 2, PI, PI + PI / 2);
+        break;
+      case 9:
+        triangle(0, 0, 0, h, w, 0);
+        break;
+      case 10:
+        triangle(w, h, w, 0, 0, h);
+        break;
+      case 11:
+        triangle(w, 0, 0, 0, w, h);
+        break;
+      case 12:
+        triangle(0, h, 0, 0, w, h);
+        break;
+      // case 13:
+      // ellipse(w / 2, h / 2, w, h);
+      // break;
+      default:
+        // rect(0, 0, w, h);
+        break;
+    }
+  }
+}
+
+let depth = MAX_DEPTH,
+  sections = [];
+
+function mouseClicked() {
+  isStart = true;
+}
+
+async function setup() {
+  frameRate(10);
+  const wh = windowWidth < windowHeight ? windowWidth : windowHeight;
+  let cnv = createCanvas(wh, wh);
+  cnv.position(windowWidth / 2 - wh / 2, 0);
+  // createCanvas(windowWidth, windowHeight);
+
+  // colorSchemes = new ColorSchemes([
+  //   'https://coolors.co/1b998b-ed217c-2d3047-fffd82-ff9b71',
+  //   'https://coolors.co/61a0af-96c9dc-f06c9b-f9b9b7-f5d491',
+  //   'https://coolors.co/512d38-b27092-f4bfdb-ffe9f3-87baab',
+  //   'https://coolors.co/ed254e-f9dc5c-c2eabd-011936-465362',
+  // ]);
+  background(255);
+
+  // colorMode(HSB);
+
+  colors = ['#1b998b', '#ed217c', '#2d3047', '#fffd82', '#ff9b71'];
+  recursiveDraw(MAX_DEPTH, 0, 0, wh);
+
+  const res = await generateColorPallet();
+  if (res) {
+    if (res.colors && res.colors.length == 5) {
+      resColors = res.colors;
+    }
+  }
+  // console.log(res);
+}
+
+function draw() {
+  if (!isStart) return;
+
+  if (count > sections.length + 60) {
+    count = 0;
+    background(255);
+    sections = [];
+    colors = resColors;
+    generateColorPallet().then((res) => {
+      if (res && res.colors && res.colors.length == 5) {
+        resColors = res.colors;
+      }
+    });
+    recursiveDraw(MAX_DEPTH, 0, 0, width);
+  }
+
+  if (sections[count]) {
+    sections[count].draw();
+  }
+
+  count++;
+}
+
+function recursiveDraw(depth, x, y, wh) {
+  if (random(MAX_DEPTH) < depth && depth > 0) {
+    depth--;
+    recursiveDraw(depth, x, y, wh / 2);
+    recursiveDraw(depth, x + wh / 2, y, wh / 2);
+    recursiveDraw(depth, x, y + wh / 2, wh / 2);
+    recursiveDraw(depth, x + wh / 2, y + wh / 2, wh / 2);
+  } else {
+    // print(depth);
+    // myDraw(x + MARG, y + MARG, wh - MARG * 2, wh - MARG * 2);
+    sections.push(
+      new Section(
+        x + MARG,
+        y + MARG,
+        wh - MARG * 2,
+        colors[int(random(colors.length))]
+      )
+    );
+  }
+}
+
+class ColorSchemes {
+  constructor(colorStringArr) {
+    this.colorSchemes = [];
+    for (let i in colorStringArr) {
+      this.colorSchemes.push(new ColorScheme(colorStringArr[i]));
+    }
+  }
+  getLength() {
+    return this.colorSchemes.length;
+  }
+  getRandColorScheme() {
+    return this.colorSchemes[int(random(this.colorSchemes.length))];
+  }
+  getRnadColor(i) {
+    return this.colorSchemes[i].getRand();
+  }
+}
+class ColorScheme {
+  constructor(colorString) {
+    this.colors = [];
+    let cc = colorString.split('/');
+    let cs = cc[cc.length - 1].split('-');
+    for (let i in cs) {
+      this.colors.push('#' + cs[i]);
+    }
+  }
+  get(i) {
+    return this.colors[i];
+  }
+  getRand() {
+    return this.colors[int(random(this.colors.length))];
+  }
+}
+
+// async function searchColorPalettes(keyword) {
+//   // 検索クエリをURLエンコードしてURLに追加
+//   const encodedKeyword = encodeURIComponent(keyword);
+//   const url = `https://colormagic.app/api/palette/search?q=${encodedKeyword}`;
+
+//   console.log(`Fetching from: ${url}`);
+
+//   try {
+//     // APIへリクエストを送信
+//     const response = await fetch(url);
+
+//     console.log(response);
+
+//     // HTTPステータスコードが200番台でなければエラーを投げる
+//     if (!response.ok) {
+//       throw new Error(
+//         `HTTP Error: ${response.status} - ${response.statusText}`
+//       );
+//     }
+
+//     // 応答ボディをJSONとして解析
+//     const data = await response.json();
+
+//     // console.log("取得したカラーパレットデータ:", data);
+
+//     // 取得したデータを処理 (例: 最初に見つかったパレットの色を表示)
+//     // if (data && data.length > 0) {
+//     //     console.log(`最初のパレット名: ${data[0].name}`);
+//     //     console.log(`色の配列: ${data[0].colors.join(', ')}`);
+//     // }
+
+//     return data;
+//   } catch (error) {
+//     console.error('データ取得中にエラーが発生しました:', error);
+//   }
+// }
+
+async function generateColorPallet() {
+  const prompt = `いい感じのカラーパレットをください。`;
+  format = {
+    type: 'object',
+    properties: {
+      palette_name: {
+        type: 'string',
+        description:
+          "このカラーパレットのテーマを表す魅力的な名前（例: '早朝の海岸線', 'モダンな暖炉'）",
+      },
+      colors: {
+        type: 'array',
+        description: 'パレットを構成する色のHEXコードのリスト',
+        minItems: 5,
+        maxItems: 5,
+        items: {
+          type: 'string',
+          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+          description: 'HEXカラーコード（例: #FF5733）',
+        },
+      },
+    },
+    required: ['palette_name', 'colors'],
+  };
+  const resJsonString = await fetchOllama(prompt, format);
+  if (resJsonString == null) {
+    return null;
+  }
+  try {
+    return JSON.parse(resJsonString);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchOllama(prompt, format = null) {
+  const model = 'llama3.1'; // 使用するモデル名
+  const body = {
+    model: model,
+    prompt: prompt,
+    stream: false,
+  };
+  if (format) {
+    body.format = format;
+  }
+
+  try {
+    console.log('fetchOllama');
+    const response = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    console.log(response);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.response;
+  } catch (e) {}
+  return null;
+}
