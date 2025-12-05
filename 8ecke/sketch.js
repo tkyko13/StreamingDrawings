@@ -11,7 +11,7 @@ class EckeDrawer {
   }
 
   generate() {
-    this.num = random(6, 10);
+    this.num = int(random(8, 12));
     // this.num = int(
     //   noise(this.x * 0.002 + frameCount, this.y * 0.002 + frameCount) * 14 + 1
     // );
@@ -19,8 +19,9 @@ class EckeDrawer {
     this.speed = random(0.01, 0.03);
 
     this.eckeArr = [{ x: random(), y: random() }];
-    for (let i = 0; i < this.num - 1; i++) {
-      if (random() < 0.2) {
+    for (let i = 1; i < this.num - 1; i++) {
+      // if (random() < 0.2) {
+      if (false) {
         this.eckeArr.push({ x: random(), y: random() });
       } else {
         if (i % 2 == 0) {
@@ -36,6 +37,17 @@ class EckeDrawer {
         }
       }
     }
+    // if (this.num % 2 == 1) {
+    //   this.eckeArr.push({
+    //     x: this.eckeArr[0].x,
+    //     y: this.eckeArr[this.eckeArr.length - 1].y,
+    //   });
+    // } else {
+    //   this.eckeArr.push({
+    //     x: this.eckeArr[this.eckeArr.length - 1].x,
+    //     y: this.eckeArr[0].y,
+    //   });
+    // }
   }
 
   draw() {

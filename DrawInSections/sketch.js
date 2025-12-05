@@ -1,11 +1,13 @@
 const MAX_DEPTH = 5;
 const MARG = 0;
+const USE_OLLAMA = false;
+
 let colorSchemes;
 let currentColorScheme;
 
 let count = 0;
 let countLimit = 5000;
-let isStart = false;
+let isStart = true; //false;
 let colors = [];
 let resColors = [];
 
@@ -23,11 +25,12 @@ class Section {
     // rect(0, 0, w, h);
 
     // グリッド内の背景
-    stroke(this.col);
+    // stroke(this.col);
+    noStroke();
     fill(this.col);
     // stroke(30);
     // fill(col);
-    this.drawRnadShape(this.wh, this.wh);
+    this.drawRandShape(this.wh, this.wh);
 
     // noFill();
     // stroke(30);
@@ -35,9 +38,10 @@ class Section {
 
     pop();
   }
-  drawRnadShape(w, h) {
+  drawRandShape(w, h) {
     const dice = int(random(13));
     // print(dice);
+    beginClip();
     switch (dice) {
       case 0:
         rect(0, 0, w, h);
@@ -85,6 +89,43 @@ class Section {
         // rect(0, 0, w, h);
         break;
     }
+    endClip();
+
+    const dice2 = int(random(6));
+    const r = int(random(3, 6) * 2);
+    const ww = w / r / 2;
+    const hh = h / r / 2;
+    switch (dice2) {
+      case 0:
+        for (let i = 0; i < r; i++) {
+          rect(i * (w / r), 0, ww, h);
+        }
+        break;
+      case 1:
+        for (let i = 0; i < r; i++) {
+          rect(0, i * (h / r), h, hh);
+        }
+        break;
+      case 2:
+        for (let i = 0; i < r; i++) {
+          for (let j = 0; j < r; j++) {
+            ellipse(i * (w / r) + ww / 2, j * (h / r) + ww / 2, ww, ww);
+          }
+        }
+        break;
+      case 3:
+        const s = w / r / 2;
+        for (let i = 0; i < r + 1; i++) {
+          for (let j = 0; j < r + 1; j++) {
+            if (j % 2 == 0)
+              ellipse(i * (w / r) + ww, j * (h / r) + ww / 2, ww, ww);
+            else ellipse(i * (w / r), j * (h / r) + ww / 2, ww, ww);
+          }
+        }
+        break;
+      default:
+        rect(0, 0, w, h);
+    }
   }
 }
 
@@ -102,12 +143,6 @@ async function setup() {
   cnv.position(windowWidth / 2 - wh / 2, 0);
   // createCanvas(windowWidth, windowHeight);
 
-  // colorSchemes = new ColorSchemes([
-  //   'https://coolors.co/1b998b-ed217c-2d3047-fffd82-ff9b71',
-  //   'https://coolors.co/61a0af-96c9dc-f06c9b-f9b9b7-f5d491',
-  //   'https://coolors.co/512d38-b27092-f4bfdb-ffe9f3-87baab',
-  //   'https://coolors.co/ed254e-f9dc5c-c2eabd-011936-465362',
-  // ]);
   background(255);
 
   // colorMode(HSB);
@@ -240,38 +275,49 @@ class ColorScheme {
 // }
 
 async function generateColorPallet() {
-  const prompt = `いい感じのカラーパレットをください。`;
-  format = {
-    type: 'object',
-    properties: {
-      palette_name: {
-        type: 'string',
-        description:
-          "このカラーパレットのテーマを表す魅力的な名前（例: '早朝の海岸線', 'モダンな暖炉'）",
-      },
-      colors: {
-        type: 'array',
-        description: 'パレットを構成する色のHEXコードのリスト',
-        minItems: 5,
-        maxItems: 5,
-        items: {
+  if (USE_OLLAMA) {
+    const prompt = `いい感じのカラーパレットをください。`;
+    format = {
+      type: 'object',
+      properties: {
+        palette_name: {
           type: 'string',
-          pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
-          description: 'HEXカラーコード（例: #FF5733）',
+          description:
+            "このカラーパレットのテーマを表す魅力的な名前（例: '早朝の海岸線', 'モダンな暖炉'）",
+        },
+        colors: {
+          type: 'array',
+          description: 'パレットを構成する色のHEXコードのリスト',
+          minItems: 5,
+          maxItems: 5,
+          items: {
+            type: 'string',
+            pattern: '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+            description: 'HEXカラーコード（例: #FF5733）',
+          },
         },
       },
-    },
-    required: ['palette_name', 'colors'],
-  };
-  const resJsonString = await fetchOllama(prompt, format);
-  if (resJsonString == null) {
-    return null;
+      required: ['palette_name', 'colors'],
+    };
+    const resJsonString = await fetchOllama(prompt, format);
+    if (resJsonString == null) {
+      // return null;
+    }
+    try {
+      return JSON.parse(resJsonString);
+    } catch (e) {
+      // return null;
+    }
   }
-  try {
-    return JSON.parse(resJsonString);
-  } catch (e) {
-    return null;
-  }
+
+  // return [
+  //   { colors: ['#1b998b', '#ed217c', '#2d3047', '#fffd82', '#ff9b71'] },
+  //   { colors: ['#61a0af', '#96c9dc', '#f06c9b', '#f9b9b7', '#f5d491'] },
+  //   { colors: ['#512d38', '#b27092', '#f4bfdb', '#ffe9f3', '#87baab'] },
+  //   { colors: ['#ed254e', '#f9dc5c', '#c2eabd', '#011936', '#465362'] },
+  // ][int(random(4))];
+  const rc = () => '#' + Math.floor(Math.random() * 16777215).toString(16);
+  return { colors: [rc(), rc(), rc(), rc(), rc()] };
 }
 
 async function fetchOllama(prompt, format = null) {
