@@ -40,9 +40,9 @@ class SoundEffect {
 
   isNoise(type) {
     if (
-      type === TYPE.NOISE_WHITE ||
-      type === TYPE.NOISE_BROWN ||
-      type === TYPE.NOISE_PINK
+      type === SoundEffect.TYPE.NOISE_WHITE ||
+      type === SoundEffect.TYPE.NOISE_BROWN ||
+      type === SoundEffect.TYPE.NOISE_PINK
     ) {
       return true;
     } else {
@@ -55,6 +55,9 @@ class SoundEffect {
     // 最大音量0.5で発火
     this.env.play(this.osc, 0, 0.5);
   }
+  stop() {
+    this.env.stop(this.osc);
+  }
 }
 
 // --- p5.jsのスケッチ ---
@@ -65,10 +68,23 @@ function setup() {
   createCanvas(400, 200);
 
   // クラスのインスタンスを作成
-  // (波形タイプ, 周波数, アタック, ディケイ, サステインレベル, リリース)
-  swordSound = new SoundEffect('noise', 0, 0.01, 0.2, 0.1, 0.3);
+  swordSound = new SoundEffect(
+    SoundEffect.TYPE.NOISE_BROWN,
+    0,
+    0.01,
+    0.2,
+    0.1,
+    0.3
+  );
   // 周波数はコインの音に合わせて調整
-  coinSound = new SoundEffect('sine', 1000, 0.001, 0.1, 0.1, 0.1);
+  coinSound = new SoundEffect(
+    SoundEffect.TYPE.SINE,
+    1000,
+    0.001,
+    0.1,
+    0.1,
+    0.1
+  );
 }
 
 function draw() {
@@ -85,5 +101,7 @@ function keyPressed() {
     swordSound.play();
   } else if (key === 'C') {
     coinSound.play();
+  } else {
+    swordSound.stop();
   }
 }

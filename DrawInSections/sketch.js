@@ -1,6 +1,6 @@
 const MAX_DEPTH = 5;
 const MARG = 0;
-const USE_OLLAMA = false;
+const USE_OLLAMA = true;
 
 let colorSchemes;
 let currentColorScheme;
@@ -10,6 +10,69 @@ let countLimit = 5000;
 let isStart = true; //false;
 let colors = [];
 let resColors = [];
+
+// class SoundEffect {
+//   static TYPE = {
+//     SINE: 'sine',
+//     TRIANGLE: 'triangle',
+//     SAWTOOTH: 'sawtooth',
+//     SQUARE: 'square',
+//     NOISE_WHITE: 'white',
+//     NOISE_BROWN: 'brown',
+//     NOISE_PINK: 'pink',
+//   };
+
+//   static GET_RANDOM_TYPE() {
+//     const types = Object.values(SoundEffect.TYPE);
+//     return types[floor(random() * types.length)];
+//   }
+
+//   /**
+//    * SoundEffectクラスのコンストラクター
+//    * @param {string} type - 波形タイプ
+//    * @param {number} freq - 周波数（Hz）。ノイズの場合は無視される。
+//    * @param {number} attack - アタックタイム（秒）。
+//    * @param {number} decay - ディケイタイム（秒）。
+//    * @param {number} sustainAmt - サステインレベル（0.0から1.0の間）。
+//    * @param {number} release - リリースタイム（秒）。
+//    */
+//   constructor(type, freq, attack, decay, sustainAmt, release) {
+//     // 1. オシレーターまたはノイズジェネレーターを作成
+//     if (this.isNoise(type)) {
+//       this.osc = new p5.Noise(type); // デフォルトでホワイトノイズを使用
+//     } else {
+//       this.osc = new p5.Oscillator(type);
+//     }
+
+//     this.env = new p5.Envelope();
+//     this.env.setADSR(attack, decay, sustainAmt, release);
+
+//     this.osc.start();
+//     // ノイズの場合は周波数設定をスキップ
+//     if (this.isNoise(type)) {
+//       this.osc.freq(freq);
+//     }
+//     this.osc.amp(0); // initially silent
+//   }
+
+//   isNoise(type) {
+//     if (
+//       type == SoundEffect.TYPE.NOISE_WHITE ||
+//       type == SoundEffect.TYPE.NOISE_BROWN ||
+//       type == SoundEffect.TYPE.NOISE_PINK
+//     ) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   }
+
+//   play() {
+//     // 音量をエンベロープで制御して鳴らす
+//     // 最大音量0.5で発火
+//     this.env.play(this.osc, 0, 0.5);
+//   }
+// }
 
 class Section {
   constructor(x, y, wh, col) {
@@ -31,10 +94,7 @@ class Section {
     // stroke(30);
     // fill(col);
     this.drawRandShape(this.wh, this.wh);
-
-    // noFill();
-    // stroke(30);
-    // rect(0, 0, w, h);
+    this.playSE(this.col, this.wh, this.wh);
 
     pop();
   }
@@ -126,6 +186,18 @@ class Section {
       default:
         rect(0, 0, w, h);
     }
+  }
+
+  playSE(col, w, h) {
+    // const se = new SoundEffect(
+    //   SoundEffect.GET_RANDOM_TYPE(),
+    //   0,
+    //   0.01,
+    //   0.2,
+    //   0.1,
+    //   0.3
+    // );
+    // se.play();
   }
 }
 
